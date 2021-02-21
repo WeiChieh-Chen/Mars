@@ -1,6 +1,7 @@
 # API
 ## Input
 ```json
+Http Method: POST
 {
     "SQL": "CREATE TABLE ..."
 }
