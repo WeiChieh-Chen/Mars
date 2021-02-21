@@ -43,7 +43,7 @@ func sqlToStruct(w http.ResponseWriter, r *http.Request) {
 	o := Output{Code: 999, Result: string(code)}
 
 	w.WriteHeader(200)
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080,http://sql2go.ricestdiotech.com")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	w.Write(jsonMarshal(o))
 }
