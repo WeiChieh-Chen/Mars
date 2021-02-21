@@ -27,7 +27,7 @@ func main() {
 
 	http.HandleFunc("/transfer", sqlToStruct)
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+port, nil))
 }
 
 func sqlToStruct(w http.ResponseWriter, r *http.Request) {
