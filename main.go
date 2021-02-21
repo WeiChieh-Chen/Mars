@@ -25,7 +25,6 @@ type (
 func main() {
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:8080","https://sql2go.ricestdiotech.com"},
 		AllowedMethods: []string{"POST"},
 	})
 
