@@ -8,6 +8,7 @@ import (
 
 	"github.com/Yimismi/sql2go"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/rs/cors"
 )
 
 type (
@@ -22,9 +23,18 @@ type (
 )
 
 func main() {
-	http.HandleFunc("/transfer", sqlToStruct)
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:36988", nil))
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:8080","https://sql2go.ricestdiotech.com"},
+		AllowedMethods: []string{"POST"},
+	})
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/transfer", sqlToStruct)
+
+	handler := c.Handler(mux)
+
+	log.Fatal(http.ListenAndServe("127.0.0.1:36988", handler))
 }
 
 func sqlToStruct(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +53,6 @@ func sqlToStruct(w http.ResponseWriter, r *http.Request) {
 	o := Output{Code: 999, Result: string(code)}
 
 	w.WriteHeader(200)
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "POST")
 	w.Write(jsonMarshal(o))
 }
 
