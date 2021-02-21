@@ -22,12 +22,9 @@ type (
 )
 
 func main() {
-
-	port := "36988"
-
 	http.HandleFunc("/transfer", sqlToStruct)
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:"+port, nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:36988", nil))
 }
 
 func sqlToStruct(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +43,8 @@ func sqlToStruct(w http.ResponseWriter, r *http.Request) {
 	o := Output{Code: 999, Result: string(code)}
 
 	w.WriteHeader(200)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	w.Write(jsonMarshal(o))
 }
 
