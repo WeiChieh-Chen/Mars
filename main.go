@@ -42,6 +42,15 @@ func sqlToStruct(w http.ResponseWriter, r *http.Request) {
 
 	sql := getContent(r.Body)
 
+	sql2go.GoXormTmp = `
+	{{- range .Tables -}}
+		type {{TableMapper .Name}} struct {
+		{{$table := .}}
+			{{range .ColumnsSeq}}{{$col := $table.GetColumn .}}	{{ColMapper $col.Name}}	{{Type $col}} {{Tag $table $col}}
+		{{end}}
+		}
+	{{end}}
+	`
 	args := sql2go.NewConvertArgs().SetGenJson(true).SetGenXorm(true)
 
 	code, err := sql2go.FromSql(sql, args)
