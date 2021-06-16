@@ -1,14 +1,10 @@
 package main
 
 import (
-	"io"
-	"io/ioutil"
+	"github.com/Yimismi/sql2go"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-
-	"github.com/Yimismi/sql2go"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/rs/cors"
 )
 
 type (
@@ -23,24 +19,23 @@ type (
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 
-	c := cors.New(cors.Options{
-		AllowedMethods: []string{"POST"},
-	})
+	r := gin.New()
+	r.Use(gin.Recovery())
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/transfer", sqlToStruct)
+	r.POST("", sqlToStruct)
 
-	handler := c.Handler(mux)
-
-	log.Fatal(http.ListenAndServe("127.0.0.1:36988", handler))
+	log.Fatal(r.Run("127.0.0.1:36988"))
 }
 
-func sqlToStruct(w http.ResponseWriter, r *http.Request) {
-	defer recovery(w)
-	defer r.Body.Close()
+func sqlToStruct(g *gin.Context) {
+	var i Input
 
-	sql := getContent(r.Body)
+	if err := g.BindJSON(&i); err != nil {
+		g.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
 
 	sql2go.GoXormTmp = `
 	{{- range .Tables -}}
@@ -53,49 +48,11 @@ func sqlToStruct(w http.ResponseWriter, r *http.Request) {
 	`
 	args := sql2go.NewConvertArgs().SetGenJson(true).SetGenXorm(true)
 
-	code, err := sql2go.FromSql(sql, args)
+	code, err := sql2go.FromSql(i.SQL, args)
 	if err != nil {
-		panic(err)
+		g.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
 	}
 
-	o := Output{Code: 999, Result: string(code)}
-
-	w.WriteHeader(200)
-	w.Write(jsonMarshal(o))
-}
-
-func getContent(input io.Reader) string {
-	b, err := ioutil.ReadAll(input)
-	if err != nil {
-		panic(err)
-	}
-
-	var i Input
-
-	jsonUnmarshal(b, &i)
-
-	return i.SQL
-}
-
-func jsonMarshal(input interface{}) []byte {
-	if b, err := jsoniter.Marshal(input); err != nil {
-		panic(err)
-	} else {
-		return b
-	}
-}
-
-func jsonUnmarshal(input []byte, bind interface{}) {
-	if err :=  jsoniter.Unmarshal(input, bind); err != nil {
-		panic(err)
-	}
-}
-
-func recovery(w http.ResponseWriter) {
-	if err := recover(); err != nil {
-		w.WriteHeader(400)
-		str := err.(error).Error()
-		o := Output{Code: 444, Result: str}
-		w.Write(jsonMarshal(o))
-	}
+	g.JSON(http.StatusOK, Output{Code: 999, Result: string(code)})
 }
