@@ -32,7 +32,7 @@ func main() {
 func sqlToStruct(g *gin.Context) {
 	var i Input
 
-	if err := g.BindJSON(&i); err != nil {
+	if err := g.ShouldBind(&i); err != nil {
 		g.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
