@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Yimismi/sql2go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -18,11 +19,17 @@ type (
 	}
 )
 
+var CORS = cors.New(cors.Config{
+	AllowAllOrigins: true,
+	AllowHeaders:    []string{"Content-Type"},
+})
+
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(CORS)
 
 	r.POST("", sqlToStruct)
 
