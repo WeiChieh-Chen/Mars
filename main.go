@@ -24,7 +24,7 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Recovery())
 
-	r.POST("", sqlToStruct)
+	r.POST("sql2go", sqlToStruct)
 
 	log.Fatal(r.Run("127.0.0.1:36988"))
 }
